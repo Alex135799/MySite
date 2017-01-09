@@ -25,7 +25,7 @@
 	  	//var template = "<div id='fb-root'></div>";
 
 	  	var script = document.createElement('script');
-	  	script.src = "//connect.facebook.net/en_US/sdk.js'"
+	  	script.src = "//connect.facebook.net/en_US/sdk.js"
 	  	script.id = 'facebook-jssdk'
 	  	script.async = true
 

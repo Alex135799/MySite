@@ -4,7 +4,7 @@ angular.module ('bnx.module.facebook', [])
 facebookProvider.$inject = ['$injector'];
 function facebookProvider ($injector) {
 	this.initialized = false;
-	var defaultParams = { appId: '213101342444152', status: true, cookie: true, xfbml: true, version: 'v2.8' };
+	var defaultParams = { appId: '', status: true, cookie: true, xfbml: true, version: 'v2.8' };
 	var facebookEvents = {
 			'auth': ['authResponseChange', 'statusChange', 'login', 'logout']
 	};
@@ -17,20 +17,20 @@ function facebookProvider ($injector) {
 			FB.init(defaultParams);
 
 			this.initialized = true;
-			//console.log ("Facebook initialization done.");
+			console.log ("Facebook initialization done.");
 
 			processPostInitializeQ ();
 		};
 	};
 
 	function executeWhenInitialized (callback, self, args) {
-		//console.log ("adding to Q: ", callback);
+		console.log ("adding to Q: ", callback);
 		Q.push ([callback, self, args]);
 	};
 
 
 	var processPostInitializeQ = function () {
-		//console.log ('Processing Q messages.');
+		console.log ('Processing Q messages.');
 		while (item = Q.shift ()) {
 			
 			//console.log("Processing: "+ item[0]);
@@ -96,7 +96,7 @@ function facebookProvider ($injector) {
 		}
 
 		var api = function (path) {
-			//console.log("Executing Api Call");
+			console.log("Executing Api Call");
 			return promise (function (callback) {
 				FB.api (path, function (response) {
 					callback (response);

@@ -21,9 +21,9 @@
 		var globalPics = [];
 		var globalOn = 0;
 		var fbPics = [];
-		var groupPics = [];
-		var onData = [];
-		var latestUpdateTime;
+		var groupPics = {};
+		var onData = {};
+		var latestUpdateTimes = {};
 		var theatrePos = angular.element($('#theatre')).prop('offsetTop');
 		var windowHeight = $(window).height();
 		vm.remainingHeight = windowHeight - theatrePos - 100;
@@ -76,66 +76,60 @@
 			})
 		}
 		
-		function updateFeed(feedData, isUpdate, numGroups){
-			var data = feedData;
-			
+		function updateGroupPics(isUpdate, message, attachmentURL, groupID, j){
 			if(!isUpdate){
-				while(groupPics.length < numGroups){
-					groupPics.push([]);
-					onData.push(0);
+				groupPics[groupID].push({"message":message,"attachment":attachmentURL})
+			}else{
+				groupPics[groupID].splice(onData[groupID]+j+1, 0, {"message":message,"attachment":attachmentURL})
+			}
+		}
+		
+		function updateFeed(feedData, isUpdate, groupId){
+			var data = feedData;
+			//onData and groupPics
+			if(!groupPics[groupId]){
+				groupPics[groupId] = [];
+			}
+			if(!onData[groupId]){
+				onData[groupId] = 0;
+			}
+			for(i=0;i<data.length;i++){
+				var message = "";
+				var post;
+				var attachmentURL;
+				if(!data[i].message && data[i].story){
+					message = data[i].story;
+				}else{
+					message = data[i].message;
 				}
-				var index;
-				for(index=0;index<numGroups;index++){
-					if(onData[index]==0){
-						break;
-					}
-				}
-				for(i=0;i<data.length;i++){
-					var message = "";
-					var post;
-					var attachmentURL;
-					if(!data[i].message && data[i].story){
-						message = data[i].story;
-					}else{
-						message = data[i].message;
-					}
-					if(data[i].attachments != null){
-						if(data[i].attachments.data[0].subattachments != null){
-							//if(data[i].attachments.data[0].subattachments.data[0].media){
-							var subdata = data[i].attachments.data[0].subattachments.data
-							for(j=0;j<subdata.length;j++){
-								if(subdata[j].media){
-									attachmentURL = subdata[j].media.image.src;
-									if(!isUpdate){
-										groupPics[index].push({"message":message,"attachment":attachmentURL})
-									}else{
-										groupPics[index].splice(onData+j+1, 0, {"message":message,"attachment":attachmentURL})
-									}
-								}else{
-									continue;
-								}
-							}
-						}else{
-							if(data[i].attachments.data[0].media){
-								attachmentURL = data[i].attachments.data[0].media.image.src;
+				if(data[i].attachments != null){
+					if(data[i].attachments.data[0].subattachments != null){
+						//if(data[i].attachments.data[0].subattachments.data[0].media){
+						var subdata = data[i].attachments.data[0].subattachments.data
+						for(j=0;j<subdata.length;j++){
+							if(subdata[j].media){
+								attachmentURL = subdata[j].media.image.src;
+								updateGroupPics(isUpdate, message, attachmentUrl, groupID, j);
 							}else{
-								//This makes no media posts not show up!
 								continue;
 							}
-							if(!isUpdate){
-								groupPics[index].push({"message":message,"attachment":attachmentURL})
-							}else{
-								groupPics[index].splice(onData+i+1, 0, {"message":message,"attachment":attachmentURL})
-							}
 						}
+					}else{
+						if(data[i].attachments.data[0].media){
+							attachmentURL = data[i].attachments.data[0].media.image.src;
+						}else{
+							//This makes no media posts not show up!
+							continue;
+						}
+						updateGroupPics(isUpdate, message, attachmentUrl, groupID, 0);
 					}
 				}
-				vm.fbPhotoData = JSON.stringify(groupPics[index]);
-				if(isUpdate && !vm.autoPlay){
-					vm.fbData = groupPics[index][onData[index]+1];
-				}else if(!isUpdate){
-					vm.fbData = groupPics[index][onData[index]];
-				}
+			}
+			vm.fbPhotoData = JSON.stringify(groupPics[groupID]);
+			if(isUpdate && !vm.autoPlay){
+				vm.fbData = groupPics[groupID][onData[groupID]+1];
+			}else if(!isUpdate){
+				vm.fbData = groupPics[groupID][onData[groupID]];
 			}
 
 		}
@@ -145,20 +139,22 @@
 				var numGroups = vm.user.preferences.fbGroupIds.length;
 				for(groupInd=0; groupInd<numGroups; groupInd++ ){
 					var groupId = vm.user.preferences.fbGroupIds[groupInd];
-					console.log("API: "+'/'+groupId+'?fields=feed{created_time,message,story,attachments}')
-					var promiseApi = facebook.api('/'+groupId+'?fields=feed{created_time,message,story,attachments}')
+					console.log("API: "+'/'+groupId+'?fields=feed{created_time,message,story,attachments},id')
+					var promiseApi = facebook.api('/'+groupId+'?fields=feed{created_time,message,story,attachments},id')
 					promiseApi.then(function(data){
+						var groupIdInside = data.id;
+						console.log("DATA::: "+JSON.stringify(data));
 						latestGroupUpdateTime = moment(data.feed.data[0].created_time);
-						if(latestUpdateTime){
-							if(latestUpdateTime.diff(latestGroupUpdateTime) < 0){
+						if(latestUpdateTimes[groupIdInside]){
+							if(latestUpdateTimes[groupIdInside].diff(latestGroupUpdateTime) < 0){
 								var updates = [];
 								var ind = 0;
-								while(latestUpdateTime.diff(moment(data.feed.data[ind].created_time)) < 0){
+								while(latestUpdateTimes[groupIdInside].diff(moment(data.feed.data[ind].created_time)) < 0){
 									updates.push(data.feed.data[ind]);
 									ind = ind + 1;
 								}
-								updateFeed(updates, true, numGroups);
-								latestUpdateTime = latestGroupUpdateTime;
+								updateFeed(updates, true, groupIdInside);
+								latestUpdateTimes[groupIdInside] = latestGroupUpdateTime;
 							}else{
 								//console.log("No Updates");
 							}
@@ -167,10 +163,10 @@
 							for(i=data.feed.data.length-1;i>=0;i--){
 								updates.push(data.feed.data[i]);
 							}
-							updateFeed(updates, false, numGroups);
-							latestUpdateTime = latestGroupUpdateTime;
+							updateFeed(updates, false, groupIdInside);
+							latestUpdateTimes[groupIdInside] = latestGroupUpdateTime;
 						}
-						setTimeout(trollForGroupsUpdates, 60000);
+						setTimeout(trollForGroupsUpdates, 1000 * 60 * 5);
 					}, function(err){
 						alert('FAILED: '+ JSON.stringify(err));
 					})
@@ -198,7 +194,7 @@
 		}
 		
 		function nextPic(){
-			console.log("GolbalON: "+globalOn)
+			console.log("GolbalONBefore: "+globalOn)
 			console.log(JSON.stringify(globalPics))
 			if(globalPics.length > globalOn+1){
 				vm.fbData = globalPics[globalOn+1]
@@ -208,18 +204,19 @@
 				globalOn++;
 				console.log(JSON.stringify(onData))
 				groupInd = Math.floor(Math.random() * (onData.length));
-				console.log("RAND: "+groupInd)
-				onData[groupInd] = onData[groupInd] + 1;
-				if(groupPics[groupInd].length <= onData[groupInd]){
-					onData[groupInd] = 0;
+				console.log("RAND: "+groupInd +" LENGTH: "+onData.length)
+				var groupID = vm.user.preferences.fbGroupIds[groupInd];
+				onData[groupID] = onData[groupID] + 1;
+				if(groupPics[groupID].length <= onData[groupID]){
+					onData[groupID] = 0;
 				}
-				vm.fbData = groupPics[groupInd][onData[groupInd]];
+				vm.fbData = groupPics[groupID][onData[groupID]];
 			}
-			
+			console.log("GolbalONAfter: "+globalOn)
 		}
 		
 		function prevPic(){
-			console.log("GolbalON: "+globalOn)
+			console.log("GolbalONBefore: "+globalOn)
 			if(globalOn != 0){
 				if(globalPics.length > globalOn){
 					vm.fbData = globalPics[globalOn-1]
@@ -232,6 +229,7 @@
 			}else{
 				vm.err = "cannot go back further";
 			}
+			console.log("GolbalONAfter: "+globalOn)
 		}
 		
 		function populatePic(fbPics){
@@ -325,12 +323,13 @@
 		})
 		
 		$rootScope.$on('UpdatedPreferences', function(event, data){
-			if(!vm.user.preferences){
-				vm.user = data;
-				trollForGroupsUpdates();
-			}else{
-				vm.user = data;
-			}
+			//if(!vm.user.preferences){
+			//	
+			//}else{
+			//	vm.user = data;
+			//}
+			vm.user = data;
+			trollForGroupsUpdates();
             //vm.user = authentication.currentUser();
 		})
 

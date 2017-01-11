@@ -17,20 +17,20 @@ function facebookProvider ($injector) {
 			FB.init(defaultParams);
 
 			this.initialized = true;
-			console.log ("Facebook initialization done.");
+			//console.log ("Facebook initialization done.");
 
 			processPostInitializeQ ();
 		};
 	};
 
 	function executeWhenInitialized (callback, self, args) {
-		console.log ("adding to Q: ", callback);
+		//console.log ("adding to Q: ", callback);
 		Q.push ([callback, self, args]);
 	};
 
 
 	var processPostInitializeQ = function () {
-		console.log ('Processing Q messages.');
+		//console.log ('Processing Q messages.');
 		while (item = Q.shift ()) {
 			
 			//console.log("Processing: "+ item[0]);

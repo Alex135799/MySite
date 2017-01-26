@@ -19,9 +19,13 @@
 		vm.toggleAutoPlay = toggleAutoPlay;
 		vm.user = authentication.currentUser() || {};
 		var globalPics = [];
-		var globalOn = 0;
+		
+		//-1 because it increments adding the first to the 0 slot
+		var globalOn = -1;
 		var fbPics = [];
 		var groupPics = {};
+		
+		//dict key=groupID value=index of the pic we are on
 		var onData = {};
 		var latestUpdateTimes = {};
 		var theatrePos = angular.element($('#theatre')).prop('offsetTop');
@@ -84,19 +88,18 @@
 			}
 		}
 		
-		function updateFeed(feedData, isUpdate, groupId){
+		function updateFeed(feedData, isUpdate, groupID){
 			var data = feedData;
 			//onData and groupPics
-			if(!groupPics[groupId]){
-				groupPics[groupId] = [];
+			if(!groupPics[groupID]){
+				groupPics[groupID] = [];
 			}
-			if(!onData[groupId]){
-				onData[groupId] = 0;
+			if(!onData[groupID]){
+				onData[groupID] = 0;
 			}
 			for(i=0;i<data.length;i++){
 				var message = "";
 				var post;
-				var attachmentURL;
 				if(!data[i].message && data[i].story){
 					message = data[i].story;
 				}else{
@@ -107,29 +110,28 @@
 						//if(data[i].attachments.data[0].subattachments.data[0].media){
 						var subdata = data[i].attachments.data[0].subattachments.data
 						for(j=0;j<subdata.length;j++){
-							if(subdata[j].media){
-								attachmentURL = subdata[j].media.image.src;
-								updateGroupPics(isUpdate, message, attachmentUrl, groupID, j);
+							if(subdata[j].media && subdata[j].media.image){
+								updateGroupPics(isUpdate, message, subdata[j].media.image.src, groupID, j);
 							}else{
 								continue;
 							}
 						}
 					}else{
-						if(data[i].attachments.data[0].media){
-							attachmentURL = data[i].attachments.data[0].media.image.src;
+						if(data[i].attachments.data[0].media && data[i].attachments.data[0].media.image){
+							updateGroupPics(isUpdate, message, data[i].attachments.data[0].media.image.src, groupID, 0);
 						}else{
 							//This makes no media posts not show up!
 							continue;
 						}
-						updateGroupPics(isUpdate, message, attachmentUrl, groupID, 0);
 					}
 				}
 			}
 			vm.fbPhotoData = JSON.stringify(groupPics[groupID]);
-			if(isUpdate && !vm.autoPlay){
+			/*if(isUpdate && !vm.autoPlay){
 				vm.fbData = groupPics[groupID][onData[groupID]+1];
-			}else if(!isUpdate){
-				vm.fbData = groupPics[groupID][onData[groupID]];
+				
+			}else */if(!isUpdate){
+				nextPic(true);
 			}
 
 		}
@@ -163,6 +165,7 @@
 							for(i=data.feed.data.length-1;i>=0;i--){
 								updates.push(data.feed.data[i]);
 							}
+							//alert(JSON.stringify(updates));
 							updateFeed(updates, false, groupIdInside);
 							latestUpdateTimes[groupIdInside] = latestGroupUpdateTime;
 						}
@@ -193,39 +196,53 @@
 			return "";
 		}
 		
-		function nextPic(){
+		function nextPic(newGroup){
 			console.log("GolbalONBefore: "+globalOn)
-			console.log(JSON.stringify(globalPics))
+			console.log("GlobalPicsBefore: "+JSON.stringify(globalPics))
 			if(globalPics.length > globalOn+1){
-				vm.fbData = globalPics[globalOn+1]
-				globalOn++;
+				if(newGroup){
+					groupInd = Object.keys(onData).length -1;
+					var groupID = vm.user.preferences.fbGroupIds[groupInd];
+					vm.fbData = groupPics[groupID][onData[groupID]];
+					globalPics.splice(globalOn+1, 0, vm.fbData);
+					onData[groupID] = onData[groupID] + 1;
+					globalOn++;
+				}else{
+					vm.fbData = globalPics[globalOn+1]
+					globalOn++;
+				}
 			}else{
-				globalPics[globalOn] = vm.fbData;
-				globalOn++;
-				console.log(JSON.stringify(onData))
-				groupInd = Math.floor(Math.random() * (onData.length));
-				console.log("RAND: "+groupInd +" LENGTH: "+onData.length)
+				console.log("onData: "+JSON.stringify(onData))
+				if(newGroup){
+					groupInd = Object.keys(onData).length -1;
+				}else{
+					groupInd = Math.floor(Math.random() * (Object.keys(onData).length));
+				}
+				console.log("groupInd: "+groupInd +" LENGTH: "+Object.keys(onData).length)
 				var groupID = vm.user.preferences.fbGroupIds[groupInd];
-				onData[groupID] = onData[groupID] + 1;
 				if(groupPics[groupID].length <= onData[groupID]){
 					onData[groupID] = 0;
 				}
 				vm.fbData = groupPics[groupID][onData[groupID]];
+				onData[groupID] = onData[groupID] + 1;
+				globalOn++;
+				globalPics[globalOn] = vm.fbData;
 			}
+			console.log("GlobalPicsAfter: "+JSON.stringify(globalPics))
 			console.log("GolbalONAfter: "+globalOn)
 		}
 		
 		function prevPic(){
 			console.log("GolbalONBefore: "+globalOn)
 			if(globalOn != 0){
-				if(globalPics.length > globalOn){
+				//if(globalPics.length > globalOn){
 					vm.fbData = globalPics[globalOn-1]
 					globalOn--;
-				}else{
+				/*}else{
 					globalPics[globalOn] = vm.fbData;
 					vm.fbData = globalPics[globalOn-1]
 					globalOn--;
-				}
+				}*/
 			}else{
 				vm.err = "cannot go back further";
 			}
@@ -329,6 +346,7 @@
 			//	vm.user = data;
 			//}
 			vm.user = data;
+			//alert(JSON.stringify(vm.user));
 			trollForGroupsUpdates();
             //vm.user = authentication.currentUser();
 		})

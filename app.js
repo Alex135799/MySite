@@ -69,6 +69,7 @@ var angularFiles = [
   'app_client/common/services/service.detectBrowser.js',
   'app_client/common/services/service.mySiteData.js',
   'app_client/common/services/service.authentication.js',
+  'app_client/common/services/service.imageMan.js',
   'app_client/home/home.controller.js',
   'app_client/auth/login/login.controller.js',
   'app_client/auth/register/register.controller.js',

@@ -89,7 +89,7 @@ function facebookProvider ($injector) {
 		var loginStatus = function() {
 			//console.log("Checking Login Status");
 			return promise (function (callback) {
-				FB.getLoginStatus( function (response) {
+				FB.getLoginStatus(function (response) {
 					callback(response);
 				});
 			});
@@ -98,7 +98,7 @@ function facebookProvider ($injector) {
 		var api = function (path) {
 			console.log("Executing Api Call");
 			return promise (function (callback) {
-				FB.api (path, function (response) {
+				FB.api(path, function (response) {
 					callback (response);
 				});
 			});

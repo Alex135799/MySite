@@ -18,7 +18,8 @@
 		var theatrePos = angular.element($('#theatre')).prop('offsetTop');
 		var windowHeight = $(window).height();
 		vm.remainingHeight = windowHeight - theatrePos - 100;
-		var canFullscreen = Fullscreen.isSupported();		
+		var canFullscreen = Fullscreen.isSupported();	
+		var autoPlayWait = 3000;
 		
 		var promise = function (func) {
 			var deferred = $q.defer ();
@@ -54,13 +55,13 @@
 		function doAutoPlay(){
 			var promiseAutoPlay = promise(function(callback) {
 				if(vm.autoPlay){
-					imageMan.nextPic(vm.user);
+					imageMan.nextPic();
 				}
 				callback();
 			});
 			promiseAutoPlay.then(function(data){
 				if(vm.autoPlay){
-					setTimeout(doAutoPlay, 3000);
+					setTimeout(doAutoPlay, autoPlayWait);
 				}
 			}, function(err){
 				alert('FAILED: '+ JSON.stringify(err));
@@ -68,11 +69,11 @@
 		}
 		
 		function nextPic(){
-			imageMan.nextPic(vm.user);
+			imageMan.nextPic();
 		}
 		
 		function prevPic(){
-			imageMan.prevPic(vm.user);
+			imageMan.prevPic();
 		}
 		
 		$rootScope.$on('fb.init', function (event, data){
@@ -88,8 +89,9 @@
 		            	addFBtoLogin(user);
 		            }
 		            if(vm.user.preferences){
+		            	imageMan.setUser(vm.user);
 		            	imageMan.setFBData(vm.fbData);
-		    			imageMan.trollForGroupsUpdates(vm.user);
+		    			imageMan.trollForGroupsUpdates();
 		            }
 		            
 				}else{
@@ -113,6 +115,7 @@
         		.then(function(){
         			console.log("Added FB");
         			vm.user = authentication.currentUser();
+        			imageMan.setUser(vm.user);
                     //console.log("New User: "+JSON.stringify(user));
         		});
         	}, function(err){
@@ -128,15 +131,17 @@
             }
             
 			vm.fbLoggedIn = true;
+			imageMan.setUser(vm.user);
 			imageMan.setFBData(vm.fbData);
-			imageMan.trollForGroupsUpdates(vm.user);
+			imageMan.trollForGroupsUpdates();
 		})
 		
 		$rootScope.$on('UpdatedPreferences', function(event, data){
 			vm.user = data;
 			//alert(JSON.stringify(vm.user));
+			imageMan.setUser(vm.user);
 			imageMan.setFBData(vm.fbData);
-			imageMan.trollForGroupsUpdates(vm.user);
+			imageMan.trollForGroupsUpdates();
             //vm.user = authentication.currentUser();
 		})
 		

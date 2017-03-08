@@ -14,9 +14,9 @@
           <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
             FB Groups <span class="caret"></span>
           </a>
-          <ul class="dropdown-menu" >
+          <ul class="dropdown-menu" id="fbGroups">
             <li ng-repeat="groupName in vm.user.preferences.fbGroupNames">
-              <p>{{groupName}}</p>
+              <button type="button" class="btn btn-danger" ng-click="vm.removeGroup(groupName)">{{groupName}}</button>
             </li>
           </ul>
         </li>

@@ -7,6 +7,11 @@
 <div id="addvspace"></div>
 
 <div>
+
+  <div class="text-center col-xs-12" ng-hide="vm.fbLoggedIn" >
+    <button ng-click="vm.login()" class="btn btn-primary">Log In Through FB</button><br />
+    <h4>You must do this in order to take advantage of this app.</h4>
+  </div>
   
   <div id="theatre" class="col-xs-12 vertical-center center-block" ng-show="vm.fbLoggedIn && vm.isFullscreen" fullscreen="vm.isFullscreen">
     <div class="col-xs-1 vertical-center text-center">

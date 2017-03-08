@@ -7,6 +7,7 @@
 		var vm = this;
 		
 		vm.fbData;
+		vm.login = login;
 		vm.fbLoggedIn = true;
 		vm.nextPic = nextPic;
 		vm.prevPic = prevPic;
@@ -75,9 +76,35 @@
 		function prevPic(){
 			imageMan.prevPic();
 		}
+			
+		$rootScope.$on('UpdatedPreferences', function(event, data){
+			console.log("Event Upd Pref: "+JSON.stringify(data));
+			vm.user = data;
+			//alert(JSON.stringify(vm.user));
+			imageMan.setUser(vm.user);
+			imageMan.setFBData(vm.fbData);
+			imageMan.trollForGroupsUpdates();
+            //vm.user = authentication.currentUser();
+		})
 		
+		$rootScope.$on('UpdatedFBData', function(event, data){
+			vm.fbData = data;
+		})
+
+		//logs in the user
+		function login(){
+			var promiseLogin = facebook.login({scope: 'public_profile,user_friends,email'});
+			
+			promiseLogin.then(function(data){
+				//yay we did it
+			}, function(err){
+				alert('FAILED: '+ JSON.stringify(err));
+			})
+		}
+		
+		//starts trolling if logged in
 		$rootScope.$on('fb.init', function (event, data){
-			console.log("Event: "+JSON.stringify(data));
+			console.log("Event FB Init: "+JSON.stringify(data));
 			var promiseLoginStatus = facebook.loginStatus();
 			
 			promiseLoginStatus.then(function(data){
@@ -91,9 +118,8 @@
 		            if(vm.user.preferences){
 		            	imageMan.setUser(vm.user);
 		            	imageMan.setFBData(vm.fbData);
-		    			imageMan.trollForGroupsUpdates();
+		            	imageMan.trollForGroupsUpdates();
 		            }
-		            
 				}else{
 					vm.fbLoggedIn = false;
 				}
@@ -115,7 +141,6 @@
         		.then(function(){
         			console.log("Added FB");
         			vm.user = authentication.currentUser();
-        			imageMan.setUser(vm.user);
                     //console.log("New User: "+JSON.stringify(user));
         		});
         	}, function(err){
@@ -124,6 +149,7 @@
 		}
 		
 		$rootScope.$on('fb.auth.login', function(event, data){
+			console.log("Event FB Logged In: "+JSON.stringify(data));
             var user = authentication.currentUser();
             
             if(authentication.isLoggedIn() && !user.fbid){
@@ -132,21 +158,8 @@
             
 			vm.fbLoggedIn = true;
 			imageMan.setUser(vm.user);
-			imageMan.setFBData(vm.fbData);
+        	imageMan.setFBData(vm.fbData);
 			imageMan.trollForGroupsUpdates();
-		})
-		
-		$rootScope.$on('UpdatedPreferences', function(event, data){
-			vm.user = data;
-			//alert(JSON.stringify(vm.user));
-			imageMan.setUser(vm.user);
-			imageMan.setFBData(vm.fbData);
-			imageMan.trollForGroupsUpdates();
-            //vm.user = authentication.currentUser();
-		})
-		
-		$rootScope.$on('UpdatedFBData', function(event, data){
-			vm.fbData = data;
 		})
 
 		vm.pageHeader = {

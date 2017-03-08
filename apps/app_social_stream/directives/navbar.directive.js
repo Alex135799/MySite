@@ -45,10 +45,49 @@
 		vm.groupName = "";
 		vm.groupPic = "";
 		vm.groupIdChanged = groupIdChanged;
+		vm.removeGroup = removeGroup;
 		
 		function groupIdChanged(){
 			vm.groupErr = "";
 			vm.foundGroup = false;
+		}
+		
+		function removeGroup(groupName){
+			console.log("NAME: "+groupName)
+			if(vm.user.preferences){
+				if(vm.user.preferences.fbGroupNames){
+					//Does this name already exist?
+					if(!!(vm.user.preferences.fbGroupNames.indexOf(groupName)+1)){
+						var index = vm.user.preferences.fbGroupNames.indexOf(groupName)
+						vm.user.preferences.fbGroupNames.splice(index, 1);
+						vm.user.preferences.fbGroupIds.splice(index, 1);
+					}else{
+						console.log("something is wrong here Duplicate...")
+					}
+				}else{
+					console.log("something is wrong here Names...")
+				}
+			}else{
+				console.log("something is wrong here Pref...")
+			}
+			if(authentication.isLoggedIn()){
+				var creds = {preferences:vm.user.preferences, email:vm.user.email};
+				authentication
+				.updatePreferences(creds)
+				.error(function(err){
+					vm.groupErr = err;
+				})
+				.then(function(){
+					console.log("Updated Preferences");
+					vm.user = authentication.currentUser();
+					$rootScope.$broadcast("UpdatedPreferences", vm.user);
+					$('#FBModal').modal('hide');
+					//console.log("New User: "+JSON.stringify(user));
+				});
+			}else{
+				console.log("Updated Preferences");
+				$rootScope.$broadcast("UpdatedPreferences", vm.user);
+			}
 		}
 		
 		function findGroup(){

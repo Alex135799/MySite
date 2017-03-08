@@ -5,6 +5,7 @@
  * 3. If there is an update, take all the pics after the current ind in globalPics,
  * 		Put them at the beginning of the list so the new updates are shown right away.
  * 4. Load all data from the group right away even multiple pages.
+ * 5. If group is dropped in the middle, need a refresh
  */
 
 
@@ -35,6 +36,20 @@
 	  
 	  function setUser(userInput){
 		  user = userInput
+		  //if a group has been removed
+		  if(user.preferences.fbGroupIds.length < Object.keys(onData).length){
+			  for(var id in onData){
+				  id = parseInt(id)
+				  //If there is not an entry in preferences anymore
+				  if(user.preferences.fbGroupIds.indexOf(id) == -1){
+					  delete onData[id]
+					  delete latestUpdateTimes[id]
+					  delete latestUpdateTimesPre[id]
+					  delete groupPics[id]
+					  delete updates[id]
+				  }
+			  }
+		  }
 	  }
 
 	  function updateGroupPics(message, attachmentURL, groupID, j){
@@ -128,8 +143,8 @@
 				var numGroups = user.preferences.fbGroupIds.length;
 				for(groupInd=0; groupInd<numGroups; groupInd++ ){
 					var groupId = user.preferences.fbGroupIds[groupInd];
-					console.log("API: "+'/'+groupId+'?fields=feed.limit(3){created_time,message,story,attachments},id')
-					var promiseApi = facebook.api('/'+groupId+'?fields=feed.limit(3){created_time,message,story,attachments},id')
+					console.log("API: "+'/'+groupId+'?fields=feed{created_time,message,story,attachments},id')
+					var promiseApi = facebook.api('/'+groupId+'?fields=feed{created_time,message,story,attachments},id')
 					promiseApi.then(function(data){
 						var groupIdInside = data.id;
 						//console.log("DATA::: "+JSON.stringify(data));

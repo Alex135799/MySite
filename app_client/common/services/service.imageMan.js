@@ -123,7 +123,7 @@
 		}
 	  
 		function trollForGroupsUpdates(){
-			//console.log("TROLLING......");
+			console.log("TROLLING......");
 			if(user.preferences && user.preferences.fbGroupIds){
 				var numGroups = user.preferences.fbGroupIds.length;
 				for(groupInd=0; groupInd<numGroups; groupInd++ ){
@@ -132,7 +132,7 @@
 					var promiseApi = facebook.api('/'+groupId+'?fields=feed.limit(3){created_time,message,story,attachments},id')
 					promiseApi.then(function(data){
 						var groupIdInside = data.id;
-						console.log("DATA::: "+JSON.stringify(data));
+						//console.log("DATA::: "+JSON.stringify(data));
 						latestGroupUpdateTime = moment(data.feed.data[0].created_time);
 						//already added pics for this group
 						if(latestUpdateTimes[groupIdInside]){
@@ -147,6 +147,12 @@
 								}
 								if(ind == data.feed.data.length && ind > 0){
 									$http.get(data.feed.paging.next).then(procNextPageRec)
+								}else if(ind > 0){
+									//make it so that the new groups are forced to be next
+									forceNewPicsNext()
+
+									updateFeed(updates[data.id], data.id);
+									latestUpdateTimes[data.id] = latestGroupUpdateTime;
 								}
 								
 								latestUpdateTimesPre[groupIdInside] = latestGroupUpdateTime;
@@ -165,6 +171,12 @@
 							}
 							if(ind == data.feed.data.length && ind > 0){
 								$http.get(data.feed.paging.next).then(procNextPageRec)
+							}else if(ind > 0){
+								//make it so that the new groups are forced to be next
+								forceNewPicsNext()
+
+								updateFeed(updates[data.id], data.id);
+								latestUpdateTimes[data.id] = latestGroupUpdateTime;
 							}
 							
 							latestUpdateTimesPre[groupIdInside] = latestGroupUpdateTime;

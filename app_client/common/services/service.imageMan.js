@@ -11,95 +11,84 @@
 
 
 (function () {
-  angular
-    .module('mySite')
-    .service('imageMan', imageMan);
+	angular
+	.module('mySite')
+	.service('imageMan', imageMan);
 
-  imageMan.$inject = [ "facebook", "$rootScope", "$http" ]
-  function imageMan(facebook, $rootScope, $http) {
-	  
-	  var fbData;
-	  var user;
-	  var updates = {};
-	  var globalPics = [];
-	  //-1 because it increments adding the first to the 0 slot
-	  var globalOn = -1;
-	  var groupPics = {};
-	  //dict key=groupID value=index of the pic we are on
-	  var onData = {};
-	  var latestUpdateTimes = {};
-	  var latestUpdateTimesPre = {};
-	  
-	  function setFBData(fbDataInput){
-		  fbData = fbDataInput
-	  }
-	  
-	  function setUser(userInput){
-		  user = userInput
-		  //if a group has been removed
-		  if(user.preferences.fbGroupIds.length < Object.keys(onData).length){
-			  for(var id in onData){
-				  id = parseInt(id)
-				  //If there is not an entry in preferences anymore
-				  if(user.preferences.fbGroupIds.indexOf(id) == -1){
-					  delete onData[id]
-					  delete latestUpdateTimes[id]
-					  delete latestUpdateTimesPre[id]
-					  delete groupPics[id]
-					  delete updates[id]
-				  }
-			  }
-		  }
-	  }
+	imageMan.$inject = [ "facebook", "$rootScope", "$http" ]
+	function imageMan(facebook, $rootScope, $http) {
 
-	  function updateGroupPics(message, attachmentURL, groupID, j){
-		  if(onData[groupID] === 'done'){
-			  onData[groupID] = groupPics[groupID].length
-			  groupPics[groupID].push({"message":message,"attachment":attachmentURL})
-		  }else{
-			  groupPics[groupID].splice(onData[groupID]+j+1, 0, {"message":message,"attachment":attachmentURL})
-		  }
-	  }
-	  
-	  function forceNewPicsNext(){
-		  var globalPicsAfterCurrSpot = globalPics.slice(globalOn+1, globalPics.length);
-		  var globalPicsBeforeCurrSpot = globalPics.slice(0, globalOn+1);
-		  globalPics = globalPicsAfterCurrSpot.concat(globalPicsBeforeCurrSpot);
-		  globalOn = globalPics.length-1;
-	  }
-	  
-	  function procNextPageRec(data){
-		  //console.log("HTTPDATA:: "+JSON.stringify(data))
-		  var id = data.config.url.split("/")[4]
-		  //console.log("HTTPDATA ID:: "+id)
-		  var data = data.data
-		  var ind = 0;
-		  while(ind < data.data.length 
-					&& latestUpdateTimes[id].diff(moment(data.data[ind].created_time)) < 0){
-			  updates[id].push(data.data[ind]);
-			  ind = ind + 1;
-		  }
-		  if(ind == data.data.length && ind > 0){
-			  $http.get(data.paging.next).then(procNextPageRec)
-		  }else{
-			  //make it so that the new groups are forced to be next
-			  forceNewPicsNext()
+		var fbData;
+		var user;
+		var updates = {};
+		var globalPics = [];
+		//-1 because it increments adding the first to the 0 slot
+		var globalOn = -1;
+		var groupPics = {};
+		//dict key=groupID value=index of the pic we are on
+		var onData = {};
+		var latestUpdateTimes = {};
+		var latestUpdateTimesPre = {};
 
-			  updateFeed(updates[id], id);
-			  latestUpdateTimes[id] = latestUpdateTimesPre[id];
-		  }
-	  }
+		function setFBData(fbDataInput){
+			fbData = fbDataInput
+		}
 
-	  function updateFeed(feedData, groupID){
-			var data = feedData;
-			//onData and groupPics
-			if(!groupPics[groupID]){
-				groupPics[groupID] = [];
+		function setUser(userInput){
+			user = userInput
+			//if a group has been removed
+			if(user.preferences.fbGroupIds.length < Object.keys(onData).length){
+				for(var id in onData){
+					id = parseInt(id)
+					//If there is not an entry in preferences anymore
+					if(user.preferences.fbGroupIds.indexOf(id) == -1){
+						delete onData[id]
+						delete latestUpdateTimes[id]
+						delete latestUpdateTimesPre[id]
+						delete groupPics[id]
+						delete updates[id]
+					}
+				}
 			}
-			if(!onData[groupID]){
-				onData[groupID] = -1;
+		}
+
+		function updateGroupPics(message, attachmentURL, groupID){
+			if(onData[groupID] === 'done'){
+				onData[groupID] = groupPics[groupID].length
+				groupPics[groupID].push({"message":message,"attachment":attachmentURL})
+			}else{
+				groupPics[groupID].splice(onData[groupID], 0, {"message":message,"attachment":attachmentURL})
 			}
-			for(i=0;i<data.length;i++){
+		}
+		
+		function updateGroupPicsSubdataLinkRec(data, subdata, groupID, j, i, message){
+			if(j<subdata.length){
+				if(subdata[j].media && subdata[j].media.image && subdata[j].type == "photo"){
+					var picID = subdata[j].target.id
+					console.log("API: "+'/'+picID+'?fields=images')
+					var promiseApi = facebook.api('/'+picID+'?fields=images')
+					promiseApi.then(function(picData){
+						//ALWAYS GET LARGEST PIC
+						var attachmentURL = picData.images[0].source
+						updateGroupPics(message, attachmentURL, groupID)
+						updateGroupPicsSubdataLinkRec(data, subdata, groupID, j+1, i, message)
+					}, function(err){
+						alert('FAILED: '+ JSON.stringify(err));
+					});
+					//not a pic but has thumbnail like video but adds before pics
+					//}else if(subdata[j].media && subdata[j].media.image){
+					//	updateGroupPics(message, subdata[j].media.image.src, groupID, j);
+				}else{
+					updateGroupPicsSubdataLinkRec(data, subdata, groupID, j+1, i, message)
+				}
+			}else{
+				updateGroupPicsLinkRec(data, groupID, i)
+			}
+		}
+		
+		function updateGroupPicsLinkRec(data, groupID, i){
+			console.log("I: "+i+" DATAL: "+data.length)
+			if(i<data.length){
 				var message = "";
 				var post;
 				if(!data[i].message && data[i].story){
@@ -111,32 +100,84 @@
 					if(data[i].attachments.data[0].subattachments != null){
 						//if(data[i].attachments.data[0].subattachments.data[0].media){
 						var subdata = data[i].attachments.data[0].subattachments.data
-						for(j=0;j<subdata.length;j++){
-							if(subdata[j].media && subdata[j].media.image){
-								updateGroupPics(message, subdata[j].media.image.src, groupID, j);
-							}else{
-								continue;
-							}
-						}
+						updateGroupPicsSubdataLinkRec(data, subdata, groupID, 0, i+1, message)
 					}else{
-						if(data[i].attachments.data[0].media && data[i].attachments.data[0].media.image){
-							updateGroupPics(message, data[i].attachments.data[0].media.image.src, groupID, 0);
+						//This makes no media posts not show up!
+						if(data[i].attachments.data[0].media && data[i].attachments.data[0].media.image &&
+								data[i].attachments.data[0].type == "photo"){
+							var picID = data[i].attachments.data[0].target.id
+							console.log("API: "+'/'+picID+'?fields=images')
+							var promiseApi = facebook.api('/'+picID+'?fields=images')
+							promiseApi.then(function(picData){
+								//ALWAYS GET LARGEST PIC
+								var attachmentURL = picData.images[0].source
+								updateGroupPics(message, attachmentURL, groupID)
+								updateGroupPicsLinkRec(data, groupID, i+1)
+							}, function(err){
+								alert('FAILED: '+ JSON.stringify(err));
+							});
+							//not a pic but has thumbnail like video but adds before pics
+							//}else if(data[i].attachments.data[0].media && data[i].attachments.data[0].media.image){
+							//	updateGroupPics(message, data[i].attachments.data[0].media.image.src, groupID, 0);
 						}else{
-							//This makes no media posts not show up!
-							continue;
+							updateGroupPicsLinkRec(data, groupID, i+1)
 						}
 					}
+				}else{
+					updateGroupPicsLinkRec(data, groupID, i+1)
+				}
+			}else{
+				//fbPhotoData = JSON.stringify(groupPics[groupID]);
+				//if(onData[groupID] < 0){
+				//	onData[groupID] = 0;
+				//}
+				if(!fbData){
+					nextPic();
 				}
 			}
-			//fbPhotoData = JSON.stringify(groupPics[groupID]);
-			if(onData[groupID] < 0){
-				onData[groupID] = 0;
+		}
+
+		function forceNewPicsNext(){
+			var globalPicsAfterCurrSpot = globalPics.slice(globalOn+1, globalPics.length);
+			var globalPicsBeforeCurrSpot = globalPics.slice(0, globalOn+1);
+			globalPics = globalPicsAfterCurrSpot.concat(globalPicsBeforeCurrSpot);
+			globalOn = globalPics.length-1;
+		}
+
+		function procNextPageRec(data){
+			//console.log("HTTPDATA:: "+JSON.stringify(data))
+			var id = data.config.url.split("/")[4]
+			//console.log("HTTPDATA ID:: "+id)
+			var data = data.data
+			var ind = 0;
+			while(ind < data.data.length 
+					&& latestUpdateTimes[id].diff(moment(data.data[ind].created_time)) < 0){
+				updates[id].push(data.data[ind]);
+				ind = ind + 1;
 			}
-			if(!fbData){
-				nextPic();
+			if(ind == data.data.length && ind > 0){
+				$http.get(data.paging.next).then(procNextPageRec)
+			}else{
+				//make it so that the new groups are forced to be next
+				forceNewPicsNext()
+
+				updateFeed(updates[id], id);
+				latestUpdateTimes[id] = latestUpdateTimesPre[id];
 			}
 		}
-	  
+
+		function updateFeed(feedData, groupID){
+			var data = feedData;
+			//onData and groupPics
+			if(!groupPics[groupID]){
+				groupPics[groupID] = [];
+			}
+			if(!onData[groupID]){
+				onData[groupID] = 0;
+			}
+			updateGroupPicsLinkRec(data, groupID, 0)
+		}
+
 		function trollForGroupsUpdates(){
 			console.log("TROLLING......");
 			if(user.preferences && user.preferences.fbGroupIds){
@@ -169,12 +210,12 @@
 									updateFeed(updates[data.id], data.id);
 									latestUpdateTimes[data.id] = latestGroupUpdateTime;
 								}
-								
+
 								latestUpdateTimesPre[groupIdInside] = latestGroupUpdateTime;
 							}else{
 								//console.log("No Updates");
 							}
-						//need to add pics for this group
+							//need to add pics for this group
 						}else{
 							updates[data.id] = [];
 							latestUpdateTimes[groupIdInside] = moment("1950-03-17T00:00:00+0000")
@@ -193,7 +234,7 @@
 								updateFeed(updates[data.id], data.id);
 								latestUpdateTimes[data.id] = latestGroupUpdateTime;
 							}
-							
+
 							latestUpdateTimesPre[groupIdInside] = latestGroupUpdateTime;
 						}
 						setTimeout(trollForGroupsUpdates, 1000 * 60 * 5);
@@ -205,7 +246,7 @@
 				console.log("Please add social media source.")
 			}
 		}
-		
+
 		function findRightSizePic(arrOfPics){
 			var i;
 			if(document.getElementById('imgDiv')){
@@ -222,8 +263,8 @@
 			}
 			return "";
 		}
-	  
-	  var nextPic = function(){
+
+		var nextPic = function(){
 			console.log("GolbalONBefore: "+globalOn)
 			console.log("GlobalPicsBefore: "+JSON.stringify(globalPics))
 			//If globalPics knows the next pic
@@ -238,24 +279,25 @@
 				}else{*/
 				fbData = globalPics[globalOn+1]
 				globalOn++;
-			//If we are at the end of all pics
+				//If we are at the end of all pics
 			}else if(areAllGroupsFinished()){
 				globalOn = 0;
 				fbData = globalPics[globalOn]
-			//If we need to add a pic to globalPics
+				//If we need to add a pic to globalPics
 			}else{
 				console.log("onData: "+JSON.stringify(onData))
 				/*if(newGroup){
 					groupInd = Object.keys(onData).length -1;
 				}else{*/
-					
+
 				//get a groupInd where the pics have not been finished
 				do{
 					groupInd = Math.floor(Math.random() * (Object.keys(onData).length));
 				}while(onData[user.preferences.fbGroupIds[groupInd]] === 'done')
-					
+
 				console.log("groupInd: "+groupInd +" LENGTH: "+Object.keys(onData).length)
 				var groupID = user.preferences.fbGroupIds[groupInd];
+				
 				fbData = groupPics[groupID][onData[groupID]];
 				//If on the last pic for the group
 				if(groupPics[groupID].length-1 == onData[groupID]){
@@ -270,18 +312,18 @@
 			console.log("GlobalPicsAfter: "+JSON.stringify(globalPics))
 			console.log("GolbalONAfter: "+globalOn)
 		}
-	  
-	  var areAllGroupsFinished = function(){
-		  var allGroupsFinished = true;
-		  for(var groupID in onData){
-			  if(onData[groupID] !== 'done'){
-				  allGroupsFinished = false;
-			  }
-		  }
-		  return allGroupsFinished;
-	  }
-	  
-	  var prevPic = function(){
+
+		var areAllGroupsFinished = function(){
+			var allGroupsFinished = true;
+			for(var groupID in onData){
+				if(onData[groupID] !== 'done'){
+					allGroupsFinished = false;
+				}
+			}
+			return allGroupsFinished;
+		}
+
+		var prevPic = function(){
 			console.log("GolbalONBefore: "+globalOn)
 			if(globalOn != 0){
 				fbData = globalPics[globalOn-1]
@@ -293,12 +335,12 @@
 			$rootScope.$broadcast("UpdatedFBData", fbData);
 			console.log("GolbalONAfter: "+globalOn)
 		}
-    return {
-    	prevPic : prevPic,
-    	nextPic : nextPic,
-    	trollForGroupsUpdates : trollForGroupsUpdates,
-    	setFBData : setFBData,
-    	setUser : setUser,
-    };
-  }
+		return {
+			prevPic : prevPic,
+			nextPic : nextPic,
+			trollForGroupsUpdates : trollForGroupsUpdates,
+			setFBData : setFBData,
+			setUser : setUser,
+		};
+	}
 })();

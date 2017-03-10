@@ -115,6 +115,10 @@ app.use(function(req, res) {
 	    res.sendFile(path.join(__dirname, 'apps', 'app_social_stream', 'index.html'));
   }else if(req.path.includes("blog")){
     res.sendFile(path.join(__dirname, 'apps', 'app_blog', 'index.html'));
+  }else if(req.path.includes("terms")){
+    res.sendFile(path.join(__dirname, 'apps', 'app_terms', 'MySite-Terms.htm'));
+  }else if(req.path.includes("privacy")){
+    res.sendFile(path.join(__dirname, 'apps', 'app_privacy', 'MySiteprivacypolicy.htm'));
   }else if(req.path.includes("webhook")){
 	  if (req.body["hub.verify_token"] === 'abc123') {
 		  res.status(200).send(req.body["hub.challenge"]);

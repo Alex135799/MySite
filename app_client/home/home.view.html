@@ -8,6 +8,15 @@
   </h4>
 </div>
 
+<div id="legal" class="row-fluid">
+  <div class="col-sm-1 col-sm-offset-2">
+    <a href="/privacy" class="btn btn-primary" style="opacity: .5;">Privacy Policy</a>
+  </div>
+  <div class="col-sm-1 col-sm-offset-6">
+    <a href="/terms" class="btn btn-primary" style="opacity: .5;">Terms & Conditions</a>
+  </div>
+</div>
+
 <div id="authBtns">
   <div ng-show="vm.isLoggedIn">
     <h4 class="center-block">Welcome {{ vm.currentUser.screenname }}!!</h4>
@@ -42,6 +51,9 @@
     </div>
   </div>
 </div>
+
+
+
 
 <img src="{{ vm.img }}" class="full-background hidden-lg hidden-md hidden-sm"></img>
 <div class="container hidden-xs">

@@ -19,6 +19,7 @@
 		var theatrePos = angular.element($('#theatre')).prop('offsetTop');
 		var windowHeight = $(window).height();
 		vm.remainingHeight = windowHeight - theatrePos - 100;
+		vm.FSYpos = 0;
 		var canFullscreen = Fullscreen.isSupported();	
 		var autoPlayWait = 3000;
 		
@@ -89,6 +90,8 @@
 		
 		$rootScope.$on('UpdatedFBData', function(event, data){
 			vm.fbData = data;
+			vm.FSYpos = screen.height/2 - data.height/2;
+			console.log(vm.FSYpos)
 		})
 
 		//logs in the user

@@ -52,12 +52,12 @@
 			}
 		}
 
-		function updateGroupPics(message, attachmentURL, groupID){
+		function updateGroupPics(message, attachmentURL, height, groupID){
 			if(onData[groupID] === 'done'){
 				onData[groupID] = groupPics[groupID].length
-				groupPics[groupID].push({"message":message,"attachment":attachmentURL})
+				groupPics[groupID].push({"message":message,"attachment":attachmentURL,"height":height})
 			}else{
-				groupPics[groupID].splice(onData[groupID], 0, {"message":message,"attachment":attachmentURL})
+				groupPics[groupID].splice(onData[groupID], 0, {"message":message,"attachment":attachmentURL,"height":height})
 			}
 		}
 		
@@ -70,7 +70,8 @@
 					promiseApi.then(function(picData){
 						//ALWAYS GET LARGEST PIC
 						var attachmentURL = picData.images[0].source
-						updateGroupPics(message, attachmentURL, groupID)
+						var height = picData.images[0].height
+						updateGroupPics(message, attachmentURL, height, groupID)
 						updateGroupPicsSubdataLinkRec(data, subdata, groupID, j+1, i, message)
 					}, function(err){
 						alert('FAILED: '+ JSON.stringify(err));
@@ -111,7 +112,8 @@
 							promiseApi.then(function(picData){
 								//ALWAYS GET LARGEST PIC
 								var attachmentURL = picData.images[0].source
-								updateGroupPics(message, attachmentURL, groupID)
+								var height = picData.images[0].height
+								updateGroupPics(message, attachmentURL, height, groupID)
 								updateGroupPicsLinkRec(data, groupID, i+1)
 							}, function(err){
 								alert('FAILED: '+ JSON.stringify(err));

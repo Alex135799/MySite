@@ -13,7 +13,7 @@
     <h4>You must do this in order to take advantage of this app.</h4>
   </div>
   
-  <div id="theatre" class="col-xs-12 vertical-center center-block" ng-show="vm.fbLoggedIn && vm.isFullscreen" fullscreen="vm.isFullscreen">
+  <div id="theatre" class="col-xs-12 vertical-center center-block" ng-show="vm.fbLoggedIn && vm.isFullscreen" fullscreen="vm.isFullscreen" style="height: 100%;">
     <div class="col-xs-12" style="position: absolute;top: 0;left: 0;height: 100%;">
   	  <img id="FS1" class="vertical-center center-block" ng-src="{{vm.fbData.attachment}}" style="height: 100%;"></img>
     </div>
@@ -30,13 +30,13 @@
     </a>
   </div>
   <div id="theatre" class="col-xs-12 vertical-center center-block" ng-show="vm.fbLoggedIn && !vm.isFullscreen" style="height: {{vm.remainingHeight}}px;" fullscreen="vm.isFullscreen">
-    <div class="col-xs-1 vertical-center text-center">
+    <div id="prev" class="col-xs-1 vertical-center text-center">
         <span class="glyphicon glyphicon-step-backward" ng-click="vm.prevPic()"></span>
     </div>
     <div class="col-xs-10">
-  	  <img id="FS1" class="vertical-center center-block" ng-src="{{vm.fbData.attachment}}" style="max-height: {{vm.remainingHeight}}px;"></img>
+  	  <img id="FS1" class="vertical-center center-block" ng-src="{{vm.fbData.attachment}}" style="max-width: 100%;max-height: {{vm.remainingHeight}}px;"></img>
     </div>
-  	<div class="col-xs-1 vertical-center text-center">
+  	<div id="next" class="col-xs-1 vertical-center text-center">
   	  <span class="glyphicon glyphicon-step-forward" ng-click="vm.nextPic()"></span>
   	</div>
   	<span id="fullscreen-glyph" class="glyphicon glyphicon-fullscreen"  ng-click="vm.toggleFullScreen()" ng-hide="vm.isFullscreen"></span>

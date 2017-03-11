@@ -19,7 +19,7 @@
 		var canFullscreen = Fullscreen.isSupported();	
 		var autoPlayWait = 3000;
 		setDisplayHeight(50);
-		$('#progBarContainer').css('padding-top',$('#progBarContainer').height()/2 - $('#progBar').height()/2);
+		//$('#progBarContainer').css('padding-top',$('#progBarContainer').height()/2 - $('#progBar').height()/2);
 		$(window).resize(function(){
 			setDisplayHeight()
 		})

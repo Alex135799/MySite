@@ -16,12 +16,22 @@
 		vm.toggleFullScreen = toggleFullScreen;
 		vm.toggleAutoPlay = toggleAutoPlay;
 		vm.user = authentication.currentUser() || {};
-		var theatrePos = angular.element($('#theatre')).prop('offsetTop');
-		var windowHeight = $(window).height();
-		vm.remainingHeight = windowHeight - theatrePos - 100;
-		vm.FSYpos = 0;
 		var canFullscreen = Fullscreen.isSupported();	
 		var autoPlayWait = 3000;
+		$('#progBarContainer').css('padding-top',$('#progBarContainer').height()/2 - $('#progBar').height()/2);
+		setDisplayHeight($('#progBarContainer').height()*1.5);
+		$(window).resize(function(){
+			setDisplayHeight()
+		})
+		
+		function setDisplayHeight(offset){
+			var theatrePos = angular.element($('#theatre')).prop('offsetTop');
+			var windowHeight = $(window).height();
+			vm.remainingHeight = windowHeight - theatrePos - $('#imgMessage').outerHeight(true) - (offset || 0);
+			$('#theatre').css('height', vm.remainingHeight);
+			$('#img1').css('max-height', vm.remainingHeight);
+			//alert("windowH: "+windowHeight+" TheaterP: "+theatrePos+" vm.remain: "+vm.remainingHeight)
+		}
 		
 		var promise = function (func) {
 			var deferred = $q.defer ();
@@ -90,8 +100,6 @@
 		
 		$rootScope.$on('UpdatedFBData', function(event, data){
 			vm.fbData = data;
-			vm.FSYpos = screen.height/2 - data.height/2;
-			console.log(vm.FSYpos)
 		})
 
 		//logs in the user

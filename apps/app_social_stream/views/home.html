@@ -13,9 +13,9 @@
     <h4>You must do this in order to take advantage of this app.</h4>
   </div>
   
-  <div id="theatre" class="col-xs-12 vertical-center center-block" ng-show="vm.fbLoggedIn && vm.isFullscreen" fullscreen="vm.isFullscreen" style="height: 100%;">
+  <div id="theatreFS" class="col-xs-12 vertical-center center-block" ng-show="vm.fbLoggedIn && vm.isFullscreen" fullscreen="vm.isFullscreen" style="height: 100%;">
     <div class="col-xs-12" style="position: absolute;top: 0;left: 0;height: 100%;">
-  	  <img id="FS1" class="vertical-center center-block" ng-src="{{vm.fbData.attachment}}" style="height: 100%;"></img>
+  	  <img id="FS1" class="vertical-center center-block" ng-src="{{vm.fbData.attachment}}" style="max-width: 100%;height: 100%;"></img>
     </div>
     <div class="col-xs-1 vertical-center text-center">
         <span class="glyphicon glyphicon-step-backward" ng-click="vm.prevPic()"></span>
@@ -23,8 +23,8 @@
   	<div class="col-xs-1 col-xs-offset-11 vertical-center text-center">
   	  <span class="glyphicon glyphicon-step-forward" ng-click="vm.nextPic()"></span>
   	</div>
-  	<span id="fullscreen-glyph" class="glyphicon glyphicon-fullscreen"  ng-click="vm.toggleFullScreen()" ng-hide="vm.isFullscreen"></span>
-  	<span id="fullscreen-glyph" class="glyphicon glyphicon-resize-small"  ng-click="vm.toggleFullScreen()" ng-show="vm.isFullscreen"></span>
+  	<span id="fullscreen-glyph" class="glyphicon glyphicon-fullscreen"  ng-click="vm.toggleFullScreen()" ng-hide="vm.isFullscreen" style="height: 10%;"></span>
+  	<span id="fullscreen-glyph" class="glyphicon glyphicon-resize-small"  ng-click="vm.toggleFullScreen()" ng-show="vm.isFullscreen" style="height: 10%;"></span>
   	<a ng-click="vm.toggleAutoPlay()">
       <toggle-switch id="toggleAutoPlay" ng-model="vm.switchState" knob-label="Auto"></toggle-switch>
     </a>
@@ -34,19 +34,27 @@
         <span class="glyphicon glyphicon-step-backward" ng-click="vm.prevPic()"></span>
     </div>
     <div class="col-xs-10">
-  	  <img id="FS1" class="vertical-center center-block" ng-src="{{vm.fbData.attachment}}" style="max-width: 100%;max-height: {{vm.remainingHeight}}px;"></img>
+  	  <img id="img1" class="vertical-center center-block" ng-src="{{vm.fbData.attachment}}" style="max-width: 100%;max-height: {{vm.remainingHeight}}px;"></img>
     </div>
   	<div id="next" class="col-xs-1 vertical-center text-center">
   	  <span class="glyphicon glyphicon-step-forward" ng-click="vm.nextPic()"></span>
   	</div>
-  	<span id="fullscreen-glyph" class="glyphicon glyphicon-fullscreen"  ng-click="vm.toggleFullScreen()" ng-hide="vm.isFullscreen"></span>
-  	<span id="fullscreen-glyph" class="glyphicon glyphicon-resize-small"  ng-click="vm.toggleFullScreen()" ng-show="vm.isFullscreen"></span>
+  	<span id="fullscreen-glyph" class="glyphicon glyphicon-fullscreen"  ng-click="vm.toggleFullScreen()" ng-hide="vm.isFullscreen" style="height: 10%;"></span>
+  	<span id="fullscreen-glyph" class="glyphicon glyphicon-resize-small"  ng-click="vm.toggleFullScreen()" ng-show="vm.isFullscreen" style="height: 10%;"></span>
   	<a ng-click="vm.toggleAutoPlay()">
       <toggle-switch id="toggleAutoPlay" ng-model="vm.switchState" knob-label="Auto"></toggle-switch>
     </a>
   </div>
   
-  <div class="col-xs-12 text-center" ng-show="vm.fbLoggedIn">
+  <div id="progBarContainer" class="col-xs-12" style="height: 100%;" ng-hide="vm.fbData">
+    <div id="progBar" class="progress col-xs-12">
+  	  <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%">
+  	    Loading...
+  	  </div>
+    </div>
+  </div>
+  
+  <div id="imgMessage" class="col-xs-12 text-center" ng-show="vm.fbLoggedIn">
     {{vm.fbData.message}}
   </div>
   

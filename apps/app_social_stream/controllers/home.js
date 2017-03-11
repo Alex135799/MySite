@@ -18,8 +18,8 @@
 		vm.user = authentication.currentUser() || {};
 		var canFullscreen = Fullscreen.isSupported();	
 		var autoPlayWait = 3000;
+		setDisplayHeight(50);
 		$('#progBarContainer').css('padding-top',$('#progBarContainer').height()/2 - $('#progBar').height()/2);
-		setDisplayHeight($('#progBarContainer').height()*1.5);
 		$(window).resize(function(){
 			setDisplayHeight()
 		})

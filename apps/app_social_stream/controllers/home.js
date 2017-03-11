@@ -16,6 +16,7 @@
 		vm.toggleFullScreen = toggleFullScreen;
 		vm.toggleAutoPlay = toggleAutoPlay;
 		vm.user = authentication.currentUser() || {};
+		vm.loading = false;
 		var canFullscreen = Fullscreen.isSupported();	
 		var autoPlayWait = 3000;
 		$('#progBarContainer').css('padding-top',$('#progBarContainer').height()/2 - $('#progBar').height()/2);
@@ -92,6 +93,9 @@
 			console.log("Event Upd Pref: "+JSON.stringify(data));
 			vm.user = data;
 			//alert(JSON.stringify(vm.user));
+			if(!vm.fbData){
+				vm.loading = true;
+			}
 			imageMan.setUser(vm.user);
 			imageMan.setFBData(vm.fbData);
 			imageMan.trollForGroupsUpdates();
@@ -100,6 +104,7 @@
 		
 		$rootScope.$on('UpdatedFBData', function(event, data){
 			vm.fbData = data;
+			vm.loading = false;
 		})
 
 		//logs in the user
@@ -127,6 +132,9 @@
 		            	addFBtoLogin(user);
 		            }
 		            if(vm.user.preferences){
+		            	if(!vm.fbData && vm.user.preferences.fbGroupIds.length > 0){
+		    				vm.loading = true;
+		    			}
 		            	imageMan.setUser(vm.user);
 		            	imageMan.setFBData(vm.fbData);
 		            	imageMan.trollForGroupsUpdates();
@@ -168,6 +176,9 @@
             }
             
 			vm.fbLoggedIn = true;
+			if(!vm.fbData && vm.user.preferences.fbGroupIds.length > 0){
+				vm.loading = true;
+			}
 			imageMan.setUser(vm.user);
         	imageMan.setFBData(vm.fbData);
 			imageMan.trollForGroupsUpdates();

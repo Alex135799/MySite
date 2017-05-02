@@ -1,6 +1,6 @@
 (function() {
 	
-	angular.module('mySocialStream',[ 'bnx.module.facebook', 'ui.bootstrap', 'ngRoute', 'jtt_instagram' ])
+	angular.module('mySocialStream',[ 'bnx.module.facebook', 'ui.bootstrap', 'ngRoute' ])
 	  .value('bowser', bowser);
 
 	function config($routeProvider, $locationProvider) {
@@ -18,7 +18,7 @@
 		});
 	}
 
-	angular.module('mySocialStream', [ 'mySite', 'bnx.module.facebook', 'ngTouch', 'FSAngular', 'toggle-switch', 'jtt_instagram' ])
+	angular.module('mySocialStream', [ 'mySite', 'bnx.module.facebook', 'ngTouch', 'FSAngular', 'toggle-switch' ])
 	  .config([ '$routeProvider', '$locationProvider', 'facebookProvider', config ]);
 
 })();

@@ -32,8 +32,8 @@
 	  	}
 	  }
 	
-	socialCtrlNavbar.$inject = [ "facebook", "authentication", "$rootScope", "$http", "$window", "$routeParams", "$http", "$location", "instagramFactory" ]
-	function socialCtrlNavbar(facebook, authentication, $rootScope, $http, $window, $routeParams, $http, $location, instagramFactory) {
+	socialCtrlNavbar.$inject = [ "facebook", "authentication", "$rootScope", "$http", "$window", "$routeParams", "$http", "$location" ]
+	function socialCtrlNavbar(facebook, authentication, $rootScope, $http, $window, $routeParams, $http, $location) {
 		var vm = this;
 		
 		access_token = '';

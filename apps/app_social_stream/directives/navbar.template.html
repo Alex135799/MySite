@@ -21,13 +21,13 @@
           </ul>
         </li>
         <li role="presentation" class="dropdown">
-          <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+          <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
             Add Source <span class="caret"></span>
           </a>
           <ul class="dropdown-menu">
-            <li><a data-toggle="modal" data-target="#FBModal" href="#">Facebook Group</a></li>
-            <li><a data-toggle="modal" data-target="#NotImplementedModal" href="#">Twitter #</a></li>
-            <li><a data-toggle="modal" data-target="#NotImplementedModal" href="#">Instagram</a></li>
+            <li><a data-toggle="modal" data-target="#FBModal" >Facebook Group</a></li>
+            <li><a data-toggle="modal" data-target="#NotImplementedModal" >Twitter #</a></li>
+            <li><a data-toggle="modal" data-target="#InstaModal" >Instagram #</a></li>
           </ul>
         </li>
         <li><a href="/about/">About</a></li>
@@ -58,8 +58,6 @@
           </div>
           <div class="form-group" ng-show="vm.groupPic && vm.foundGroup">
             <label for="groupPic" class="form-control-label">Group Photo:</label>
-            <!-- <img id="FS1" class="vertical-center center-block" ng-src="{{vm.groupPic}}" 
-                 style="max-height: {{vm.remainingHeight}}px; max-width: {{vm.remainingWidth}}px;"></img> -->
             <img id="groupPic" class="img-thumbnail vertical-center center-block" ng-src="{{vm.groupPic}}"></img>
           </div>
         </form>
@@ -71,6 +69,40 @@
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
         <button type="button" class="btn btn-primary" ng-hide="vm.foundGroup" ng-click="vm.findGroup()">Search Group</button>
         <button type="button" class="btn btn-primary" ng-show="vm.foundGroup" ng-click="vm.addGroup()">Add Group</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- InstaModal -->
+<div class="modal fade" id="InstaModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="myModalLabel">Add Instagram Hashtag</h4>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label for="groupId" class="form-control-label">Hashtag:</label>
+            <input type="text" class="form-control" id="hashtag" ng-model="vm.hashtag" ng-change="vm.hashtagChanged()"/>
+          </div>
+          <div class="form-group" ng-show="vm.hashPic && vm.foundHash">
+            <label for="hashPic" class="form-control-label">Hash Example:</label>
+            <img id="groupPic" class="img-thumbnail vertical-center center-block" ng-src="{{vm.hashPic}}"></img>
+          </div>
+        </form>
+        <div class="alert alert-danger" ng-show="vm.hashErr">
+          <p>{{vm.hashErr}}</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" ng-hide="vm.foundHash" ng-click="vm.findHash()">Search #</button>
+        <button type="button" class="btn btn-primary" ng-show="vm.foundHash" ng-click="vm.addHash()">Add #</button>
       </div>
     </div>
   </div>

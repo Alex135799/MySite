@@ -32,13 +32,16 @@
 	  	}
 	  }
 	
-	socialCtrlNavbar.$inject = [ "facebook", "authentication", "$rootScope" ]
-	function socialCtrlNavbar(facebook, authentication, $rootScope) {
+	socialCtrlNavbar.$inject = [ "facebook", "authentication", "$rootScope", "$http", "$window", "$routeParams", "$http", "$location", "instagramFactory" ]
+	function socialCtrlNavbar(facebook, authentication, $rootScope, $http, $window, $routeParams, $http, $location, instagramFactory) {
 		var vm = this;
+		
+		access_token = '';
 		
 		vm.user = authentication.currentUser() || {};
 		vm.foundGroup = false;
 		vm.groupId = 1612692632367704;
+		vm.hashtag = "glasses";
 		vm.findGroup = findGroup;
 		vm.addGroup = addGroup;
 		vm.groupErr = "";
@@ -46,10 +49,19 @@
 		vm.groupPic = "";
 		vm.groupIdChanged = groupIdChanged;
 		vm.removeGroup = removeGroup;
+		vm.findHash = findHash;
+		vm.addHash = addHash;
+		vm.hashtagChanged = hashtagChanged;
+		vm.instaAuth = $location.hash().split("=")[$location.hash().split("=").length-1];
 		
 		function groupIdChanged(){
 			vm.groupErr = "";
 			vm.foundGroup = false;
+		}
+		
+		function hashtagChanged(){
+			vm.hashErr = "";
+			vm.foundHash = false;
 		}
 		
 		function removeGroup(groupName){
@@ -151,6 +163,52 @@
 			}
 			$('#FBModal').modal('hide');
 		}
+		
+		function findHash(){
+			if(!vm.instaAuth){
+				$window.location.href = "https://api.instagram.com/oauth/authorize/?client_id=a1d68979dac94f13ba591933bf8f23c1&redirect_uri=http://localhost:8090/social&response_type=token&scope=public_content"
+			}else{
+				/*instagramFactory.getMediaByTag({
+			        tag:vm.hashtag,
+			        count:20,
+			        access_token:vm.instaAuth,
+			    }).then(function(data){
+			        console.info("media by tag", JSON.stringify(data));
+			    });*/
+				$http.jsonp(
+					"https://api.instagram.com/v1/tags/"+vm.hashtag+"/media/recent",
+		            {
+		                method: 'GET',
+		                params: {"access_token":vm.instaAuth,"callback":"JSON_CALLBACK","count":20},
+		            }
+		        ).then(function success(data){
+		        	if(data.data.data[0]){
+		        		vm.hashPic = data.data.data[0].images.standard_resolution.url;
+		        		vm.foundHash = true;
+		        	}else{
+		        		vm.hashErr = "No Data found for this hashtag."
+		        	}
+			        console.info("media by tag", JSON.stringify(data));
+			    }, function error(data){
+			    	console.info("ERROR JSON: ", JSON.stringify(data));
+			    });
+				/*$http({
+					method: "GET",
+					crossDomain: true,
+					url: "https://api.instagram.com/v1/tags/"+vm.hashtag+"/media?access_token="+vm.instaAuth,
+					responseType: "jsonp"
+				}).then(function success(data){
+					console.log(JSON.stringify(data))
+				}, function error(data){
+					console.log(JSON.stringify(data))
+				})*/
+			}
+		}
+		
+		function addHash(){
+			
+		}
+		
 	}
 
 })();
